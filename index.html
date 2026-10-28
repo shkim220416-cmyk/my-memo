@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>나의 메모장</title>
+<style>
+body{font-family:sans-serif;max-width:560px;margin:40px auto;padding:0 16px}
+input{width:72%;padding:8px} button{padding:8px 14px}
+li{padding:6px 0;border-bottom:1px solid #ddd}
+</style>
+</head>
+<body>
+<h1>나의 메모장</h1>
+<form id="f"><input id="t" placeholder="메모를 적으세요" required> <button>저장</button></form>
+<ul id="list"></ul>
+<script>
+const list = document.getElementById('list');
+async function load() {
+  const rows = await (await fetch('/api/memo')).json();
+  if (!Array.isArray(rows)) { list.textContent = '연결 오류 · ' + JSON.stringify(rows); return; }
+  list.innerHTML = rows.map(m => '<li>' + m.body.replace(/</g, '&lt;') + '</li>').join('');
+}
+document.getElementById('f').onsubmit = async e => {
+  e.preventDefault();
+  const t = document.getElementById('t');
+  await fetch('/api/memo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ body: t.value }) });
+  t.value = '';
+  load();
+};
+load();
+</script>
+</body>
+</html>
